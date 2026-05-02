@@ -4,33 +4,24 @@
 <meta charset="UTF-8">
 <title>RFID信息 - 车管系统 | 智能自适应缩放</title>
 
-<!-- 动态视口控制：电脑保持原始比例，手机端自动等比缩小（同比例缩小） -->
+<!-- 动态视口控制：电脑保持原始比例，手机端自动等比缩小 -->
 <script>
 (function() {
-    // 自适应缩放配置：手机端整体缩放比例（0.85 意为原始尺寸的85%，达到“同比例缩小”的效果）
-    // 可根据需要调整此值（如0.8、0.9），电脑端保持1.0不变
-    const MOBILE_SCALE = 0.85;   // 手机扫码时整体缩小至85%，电脑端全尺寸显示
+    const MOBILE_SCALE = 0.85;   // 手机扫码时整体缩小至85%
     
-    // 检测是否为移动端（手机/平板建议也应用，按主流手机识别）
     function isMobileDevice() {
-        // 通过User-Agent识别智能手机 (覆盖iOS、Android、鸿蒙等)
         const ua = navigator.userAgent || navigator.vendor || window.opera;
         const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Windows Phone|Kindle|Silk/i;
         if (mobileRegex.test(ua)) return true;
-        
-        // 辅助：通过屏幕宽度判断（部分宽屏手机可识别，主要以UA为主）
         if (window.screen && window.screen.width <= 768) return true;
-        
         return false;
     }
     
-    // 设置viewport缩放系数
     function setViewportScale() {
         let viewportMeta = document.querySelector('meta[name="viewport"]');
         const isMobile = isMobileDevice();
         
         if (isMobile) {
-            // 手机端：设置等比缩小（initial-scale = MOBILE_SCALE 实现同比例缩小）
             const viewportContent = `width=device-width, initial-scale=${MOBILE_SCALE}, maximum-scale=2.0, user-scalable=yes`;
             if (viewportMeta) {
                 viewportMeta.setAttribute('content', viewportContent);
@@ -42,7 +33,6 @@
             }
             document.documentElement.classList.add('mobile-scaled');
         } else {
-            // 电脑端：保持原始比例 1.0，确保全部显示
             const desktopContent = 'width=device-width, initial-scale=1.0';
             if (viewportMeta) {
                 viewportMeta.setAttribute('content', desktopContent);
@@ -58,7 +48,6 @@
     
     setViewportScale();
     
-    // 监听窗口变化（旋转/尺寸改变）时重新调整策略
     let resizeTimer;
     window.addEventListener('resize', function() {
         if (resizeTimer) clearTimeout(resizeTimer);
@@ -70,7 +59,6 @@
 </script>
 
 <style>
-/* 基础重置 + 原始电脑样式 */
 body{
     margin:0;
     background:#f5f5f5;
@@ -78,7 +66,7 @@ body{
     overflow-x: auto;
 }
 
-/* ===== 水印（完全铺满，时间完整显示优化） ===== */
+/* ===== 水印（完全铺满，文字左对齐 + 微软雅黑） ===== */
 .watermark{
     position:fixed;
     top:-5px;
@@ -96,41 +84,39 @@ body{
     display:grid;
     grid-template-columns: repeat(9, 1fr);
     align-items:flex-start;
-    justify-items:center;
+    justify-items:start;   /* 改为 start，让每个水印单元格内容从左侧开始排列，实现左对齐 */
 }
 
-/* 单个水印 */
+/* 单个水印 - 强制左对齐 + 微软雅黑 */
 .wm-item{
     color:#9ecdbc;
     font-size:18px;
     transform:rotate(-20deg);
     opacity:0.85;
-    font-family:"Microsoft YaHei";
+    font-family:"Microsoft YaHei", "微软雅黑", monospace;  /* 确保微软雅黑优先 */
     line-height:27px;
     white-space: normal;
-    text-align: center;
+    text-align: left;      /* 文本左对齐，车牌和时间均靠左 */
+    width: 100%;
 }
 
-/* 时间样式：全局显示完整时间（修复手机端最后一位看不到的问题） 
-   移除原本的固定宽度和隐藏裁切，确保日期时间完整可见 */
+/* 时间样式：完整显示无裁切 */
 .time{
     display:inline-block;
     white-space: nowrap;
-    /* 移除 width 和 overflow 限制，完整呈现秒数 */
-    font-family: monospace, "Microsoft YaHei";
+    font-family: inherit;  /* 继承微软雅黑 */
 }
 
-/* ===== 内容区域 ===== */
+/* ===== 内容区域（车辆信息） ===== */
 .container {
     position: absolute;
     top: 27px;
-    left: 28px;        /* 左边缩进28px */
-    width: calc(100vw - 56px);   /* 宽度铺满剩余屏幕 → 右边自然缩进28px */
+    left: 28px;
+    width: calc(100vw - 56px);
     z-index: 10;
     background: transparent;
 }
 
-/* 每一条信息项 + 底部灰色边框 */
 .item {
     line-height: 43.5px;
     border-bottom: 1px solid rgba(221, 221, 221, 0.5);
@@ -144,27 +130,27 @@ body{
     font-size:14px;
     color:#555;
     vertical-align: top;
+    font-family: "Microsoft YaHei", "微软雅黑";
 }
 
 .value{
     font-size:14px;
-    font-family:Arial,"Microsoft YaHei";
+    font-family: "Microsoft YaHei", Arial, sans-serif;
 }
 
-/* ========= 防伪图片专属区域（电脑端默认样式） ========= */
+/* ========= 防伪图片区域（电脑端默认样式） ========= */
 .anti {
-    margin-bottom: 0px;   /* 行高调节，保持原风味 */
+    margin-bottom: 0px;
 }
 
-/* 电脑端图片样式：固定宽高，与上方文字严格左对齐（负边距保留原始视觉效果） */
 .anti img {
     display: block;
-    margin-left: 90px;            /* 对齐 .label 右侧起始位置 */
-    width: 595px;                 /* 默认宽（电脑全尺寸展示） */
-    max-width: calc(100% - 90px); /* 防止溢出右侧边缘 */
-    height: 105px;               /* 固定高度保持设计一致性 */
-    object-fit: contain;         /* 保证图片内容不变形 */
-    margin-top: -37px;           /* 电脑端特有：向上偏移，让图片与文字区域紧凑 */
+    margin-left: 90px;
+    width: 595px;
+    max-width: calc(100% - 90px);
+    height: 105px;
+    object-fit: contain;
+    margin-top: -37px;
     margin-bottom: 14px;
     background: #fafafa;
 }
@@ -173,33 +159,25 @@ img {
     border: 0;
 }
 
-/* ========= 移动端专项优化 ========= 
-     解决手机端两个实际问题：
-     1. 时间显示不完整 => 确保 .time 宽度自动、不裁剪
-     2. 防伪图片换行：隐藏 <br> + flex布局，让图片与标签同一行（避免换行不适）
-     同时保留手机同比例缩放的整体观感
-*/
+/* ========= 移动端专项优化（时间完整 + 防伪图片同行） ========= */
 @media (max-width: 768px) {
-    /* 水印时间完整显示加强保障 */
+    /* 水印区域保持左对齐，字体不变 */
+    .wm-item {
+        font-size: 15px;
+        line-height: 24px;
+        transform: rotate(-18deg);
+        text-align: left;
+    }
     .time {
         white-space: nowrap;
         overflow: visible !important;
         width: auto !important;
-        display: inline-block;
-    }
-    .wm-item {
-        font-size: 15px;      /* 适当缩小水印字体，防止因缩放导致拥挤 */
-        line-height: 24px;
-        transform: rotate(-18deg);
     }
     
-    /* ----------------- 防伪图片区域统一优化 ----------------- */
-    /* 隐藏原始换行标签，让布局更紧凑，避免“图片在文字下一行”的孤立感 */
+    /* 防伪图片同行修复 */
     .anti br {
         display: none;
     }
-    
-    /* 将 .anti 改为 flex 行内布局，使标签和图片在同一行，自然对齐 */
     .anti {
         display: flex;
         flex-wrap: wrap;
@@ -208,37 +186,30 @@ img {
         margin-bottom: 12px;
         line-height: normal;
     }
-    
-    /* 保持 .label 原有宽度，但垂直居中 */
     .anti .label {
-        width: auto;           /* 自适应宽度 */
+        width: auto;
         flex-shrink: 0;
         line-height: 32px;
-        vertical-align: middle;
     }
-    
-    /* 移动端图片弹性适应：不再强制块级，与标签同行展示 */
     .anti img {
         display: inline-block;
-        margin-left: 0;          /* 取消电脑端的偏移量 */
-        margin-top: 0;           /* 取消负边距，避免挤压 */
-        width: auto;             /* 宽度自适应内容 */
-        max-width: 65%;          /* 手机端最大宽度65%避免超大，视觉舒适 */
-        height: auto;            /* 高度自适应保持比例 */
+        margin-left: 0;
+        margin-top: 0;
+        width: auto;
+        max-width: 65%;
+        height: auto;
         object-fit: contain;
         margin-bottom: 0;
         vertical-align: middle;
         flex-shrink: 1;
     }
     
-    /* 为极小屏幕设置更友好的图片宽度 */
     @media (max-width: 480px) {
         .anti img {
             max-width: 70%;
         }
     }
     
-    /* 信息项文字微调 */
     .label {
         font-size: 13px;
         width: 78px;
@@ -252,7 +223,7 @@ img {
     }
 }
 
-/* 大电脑屏幕维持原本图片的壮丽显示 */
+/* 大电脑屏幕保持原始图片效果 */
 @media (min-width: 1024px) {
     .anti img {
         width: 595px;
@@ -262,7 +233,6 @@ img {
     }
 }
 
-/* 避免移动端水印遮挡内容点击，水印不干扰点击 */
 .watermark {
     pointer-events: none;
 }
@@ -270,35 +240,30 @@ img {
 </head>
 <body>
 
-<!-- 水印背景（全屏） -->
+<!-- 水印背景 -->
 <div class="watermark" id="wm"></div>
 
-<!-- 车辆及防伪信息主体 -->
+<!-- 车辆信息 -->
 <div class="container">
     <div class="item">
         <span class="label">车牌号</span>
         <span class="value">赣AK70935</span>
     </div>
-
     <div class="item">
         <span class="label">车主姓名</span>
         <span class="value">戴*</span>
     </div>
-
     <div class="item">
         <span class="label">入网时间</span>
         <span class="value">2025-07-16 13:46:35</span>
     </div>
-
     <div class="item anti">
         <span class="label">防伪图片</span><br>
-        <!-- 防伪图片：电脑端保留换行+负边距效果；手机端隐藏br并使用flex同行展示，彻底解决换行感 -->
-        <img src="防伪.png" alt="RFID防伪标识" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'120\' viewBox=\'0 0 400 120\'%3E%3Crect width=\'400\' height=\'120\' fill=\'%23e9ecef\'/%3E%3Ctext x=\'20\' y=\'50\' font-size=\'16\' fill=\'%23666\'%3E防伪图片示例（请替换真实防伪图）%3C/text%3E%3Ctext x=\'20\' y=\'85\' font-size=\'14\' fill=\'%23999\'%3ERFID授权防伪印章%3C/text%3E%3C/svg%3E';">
+        <img src="防伪.png" alt="RFID防伪标识" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'120\' viewBox=\'0 0 400 120\'%3E%3Crect width=\'400\' height=\'120\' fill=\'%23e9ecef\'/%3E%3Ctext x=\'20\' y=\'50\' font-size=\'16\' fill=\'%23666\'%3E防伪图片示例%3C/text%3E%3Ctext x=\'20\' y=\'85\' font-size=\'14\' fill=\'%23999\'%3ERFID授权防伪印章%3C/text%3E%3C/svg%3E';">
     </div>
 </div>
 
 <script>
-/* ===== 扫码实时时间（水印防伪时间戳） ===== */
 function getNow(){
     let d = new Date();
     let p = n => n.toString().padStart(2,'0');
@@ -307,8 +272,6 @@ function getNow(){
 }
 
 let currentTimestamp = getNow();
-
-// 生成密集水印 (5行 * 9列)
 const watermarkContainer = document.getElementById("wm");
 if (watermarkContainer) {
     for(let r = 0; r < 5; r++){
@@ -317,7 +280,6 @@ if (watermarkContainer) {
         for(let c = 0; c < 9; c++){
             let div = document.createElement("div");
             div.className = "wm-item";
-            // 水印内容：车牌号 + 当前扫描时间（完整时间，无裁切）
             div.innerHTML = "赣AK70935<br><span class='time'>"+currentTimestamp+"</span>";
             row.appendChild(div);
         }
@@ -325,35 +287,7 @@ if (watermarkContainer) {
     }
 }
 
-// 附加确保手机端完美显示时间最后一位（因为CSS已修复，不需额外动作）
-// 控制台输出自适应模式信息
-console.log("✅ RFID车管系统 | 自适应缩放模式: " + 
-    (document.documentElement.classList.contains('mobile-scaled') ? "📱 手机端 (同比例缩小至0.85 + 防伪图片同行布局 | 时间完整显示)" : "🖥️ 电脑端 (全尺寸展示 | 防伪图片原有效果)"));
-
-// 确保防伪图片在手机端加载后无额外换行（动态监听可选）
-document.addEventListener('DOMContentLoaded', function() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
-    if (isMobile) {
-        // 额外确保移动端下防伪图片不会因为设备缩放导致显示偏移
-        let antiImages = document.querySelectorAll('.anti img');
-        antiImages.forEach(img => {
-            if (img.complete) {
-                img.style.display = 'inline-block';
-            } else {
-                img.onload = () => { img.style.display = 'inline-block'; };
-            }
-        });
-    }
-});
+console.log("✅ 水印字体已恢复微软雅黑 + 左端对齐 | 手机端时间完整显示 + 防伪图片同行布局");
 </script>
-
-<!-- 
-  升级说明：
-  1. 水印时间修复：移除 .time 的固定宽度和overflow:hidden，改用white-space: nowrap，确保秒数完整显示（手机/电脑均可见最后一位）。
-  2. 手机端防伪图片换行问题：在@media (max-width:768px) 中隐藏 .anti 内部的 <br> 标签，并将 .anti 转为 flex 布局，
-     使标签与图片位于同一行（水平排列），完美消除手机端“图片在下一行”的突兀感。电脑端依然保留原始换行+负边距的经典视觉。
-  3. 两种终端各自完美适配：电脑端全尺寸+原版图文效果；手机扫码整体缩放0.85且图文横排+时间完整。
-  4. 此外增强防伪图片加载容错，未找到图片时显示SVG占位符。
--->
 </body>
 </html>
