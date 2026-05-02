@@ -66,7 +66,7 @@ body{
     overflow-x: auto;
 }
 
-/* ===== 水印容器（通用） ===== */
+/* ===== 水印（完全铺满，文字左对齐 + 微软雅黑） ===== */
 .watermark{
     position:fixed;
     top:-5px;
@@ -74,43 +74,37 @@ body{
     width:100%;
     height:113%;
     display:grid;
+    grid-template-rows: repeat(5, 1fr);
     z-index:100;
     pointer-events:none;
     overflow: hidden;
 }
 
-/* 电脑端默认: 5行9列 (由js动态创建.row来配合，但保留基础grid样式备用) */
-/* 实际布局由 .row 完成，这里只是设置容器为块级，具体行列由js生成的.row结构决定 */
-.watermark {
-    display: block;  /* 电脑端依赖内部.row网格，所以重置为block，内部.row负责网格 */
+.row{
+    display:grid;
+    grid-template-columns: repeat(9, 1fr);
+    align-items:flex-start;
+    justify-items:start;   /* 改为 start，让每个水印单元格内容从左侧开始排列，实现左对齐 */
 }
 
-/* 保证.row的网格布局 */
-.row {
-    display: grid;
-    align-items: flex-start;
-    justify-items: start;   /* 左对齐 */
-}
-
-/* 电脑端单独给.row设定样式（默认样式） */
-/* .row 在电脑端由js生成时已经带有样式，我们通过类保证 */
-/* 为了兼容两种模式，确保.wm-item左对齐+微软雅黑 */
+/* 单个水印 - 强制左对齐 + 微软雅黑 */
 .wm-item{
     color:#9ecdbc;
     font-size:18px;
     transform:rotate(-20deg);
     opacity:0.85;
-    font-family:"Microsoft YaHei", "微软雅黑", monospace;
+    font-family:"Microsoft YaHei", "微软雅黑", monospace;  /* 确保微软雅黑优先 */
     line-height:27px;
     white-space: normal;
-    text-align: left;
+    text-align: left;      /* 文本左对齐，车牌和时间均靠左 */
     width: 100%;
 }
 
+/* 时间样式：完整显示无裁切 */
 .time{
     display:inline-block;
     white-space: nowrap;
-    font-family: inherit;
+    font-family: inherit;  /* 继承微软雅黑 */
 }
 
 /* ===== 内容区域（车辆信息） ===== */
@@ -165,7 +159,7 @@ img {
     border: 0;
 }
 
-/* ========= 移动端专项优化（时间完整 + 防伪图片同行 + 水印2列4行） ========= */
+/* ========= 移动端专项优化（时间完整 + 防伪图片同行） ========= */
 @media (max-width: 768px) {
     /* 水印区域保持左对齐，字体不变 */
     .wm-item {
@@ -178,24 +172,6 @@ img {
         white-space: nowrap;
         overflow: visible !important;
         width: auto !important;
-    }
-    
-    /* 移动端水印容器改为grid布局2列4行（由js动态生成结构 + 额外CSS确保）*/
-    /* 因为手机端会重新生成结构：将.watermark设为grid，直接子项.wm-item排列，不使用.row */
-    /* 但为了兼容两种生成模式，我们给移动端.watermark设定grid布局并且子项自动排列为2列4行 */
-    /* 下面样式用于支持手机端重建后的水印布局（同时电脑端不受影响） */
-    .watermark.mobile-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(4, 1fr);
-        gap: 0;
-        align-items: start;
-        justify-items: start;
-    }
-    /* 移动端下直接子项.wm-item适应网格 */
-    .watermark.mobile-grid .wm-item {
-        width: auto;
-        transform: rotate(-18deg);
     }
     
     /* 防伪图片同行修复 */
@@ -288,106 +264,30 @@ img {
 </div>
 
 <script>
-// 获取当前扫码时间（全局唯一）
 function getNow(){
     let d = new Date();
     let p = n => n.toString().padStart(2,'0');
     return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate()) + " " +
            p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
 }
+
 let currentTimestamp = getNow();
-
-// 检测是否为移动端（与上部视口逻辑一致）
-function isMobileDeviceForWatermark() {
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Windows Phone|Kindle|Silk/i;
-    if (mobileRegex.test(ua)) return true;
-    if (window.screen && window.screen.width <= 768) return true;
-    return false;
-}
-
 const watermarkContainer = document.getElementById("wm");
-
-// 生成水印的通用函数 (rows, cols, 水印内容生成器)
-function generateWatermark(rows, cols, contentCallback) {
-    if (!watermarkContainer) return;
-    // 清空原有水印
-    watermarkContainer.innerHTML = '';
-    // 移除额外的class (避免之前手机端遗留的类)
-    watermarkContainer.classList.remove('mobile-grid');
-    
-    if (isMobileDeviceForWatermark() && rows === 2 && cols === 4) {
-        // 手机端采用特殊结构：不使用.row，直接使用grid布局，更简单实现2列4行
-        watermarkContainer.classList.add('mobile-grid');
-        for (let i = 0; i < rows * cols; i++) {
-            let wmItem = document.createElement('div');
-            wmItem.className = 'wm-item';
-            wmItem.innerHTML = contentCallback(i);
-            watermarkContainer.appendChild(wmItem);
+if (watermarkContainer) {
+    for(let r = 0; r < 5; r++){
+        let row = document.createElement("div");
+        row.className = "row";
+        for(let c = 0; c < 9; c++){
+            let div = document.createElement("div");
+            div.className = "wm-item";
+            div.innerHTML = "赣AK70935<br><span class='time'>"+currentTimestamp+"</span>";
+            row.appendChild(div);
         }
-        // 设置grid属性已通过.mobile-grid完成
-    } else {
-        // 电脑端或者非2x4模式，使用原有的row嵌套方式保持结构稳定
-        for (let r = 0; r < rows; r++) {
-            let rowDiv = document.createElement('div');
-            rowDiv.className = 'row';
-            // 设置该行的grid模板列为cols个等分布局
-            rowDiv.style.display = 'grid';
-            rowDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            rowDiv.style.alignItems = 'flex-start';
-            rowDiv.style.justifyItems = 'start';
-            for (let c = 0; c < cols; c++) {
-                let wmItem = document.createElement('div');
-                wmItem.className = 'wm-item';
-                wmItem.innerHTML = contentCallback(r * cols + c);
-                rowDiv.appendChild(wmItem);
-            }
-            watermarkContainer.appendChild(rowDiv);
-        }
-        // 保证整体watermark容器为block，内部row网格正常
-        watermarkContainer.style.display = 'block';
+        watermarkContainer.appendChild(row);
     }
 }
 
-// 水印内容统一使用车牌号+扫码时间
-function watermarkContent(index) {
-    return "赣AK70935<br><span class='time'>"+currentTimestamp+"</span>";
-}
-
-// 根据设备类型决定水印行列数
-function buildWatermarkByDevice() {
-    const isMobile = isMobileDeviceForWatermark();
-    if (isMobile) {
-        // 手机端：2列4行，共8个水印（满足背景显示2列4行）
-        generateWatermark(4, 2, watermarkContent);  // 注意顺序：行数=4，列数=2 -> 2列4行
-    } else {
-        // 电脑端：5行9列，保持原样（45个水印）
-        generateWatermark(5, 9, watermarkContent);
-    }
-}
-
-// 初始生成水印（覆盖原有的默认5x9生成）
-buildWatermarkByDevice();
-
-// 监听DOM完全加载完毕确保没有任何残留，防冲突（可选）
-window.addEventListener('DOMContentLoaded', function() {
-    // 确保水印不会被重复覆盖，但若已有正确内容则无需操作
-    // 另外防伪图片在手机端加载完成后的额外微调
-    if (isMobileDeviceForWatermark()) {
-        // 确保图片同行完美
-        let antiImgs = document.querySelectorAll('.anti img');
-        antiImgs.forEach(img => {
-            if (img.complete) {
-                img.style.display = 'inline-block';
-            } else {
-                img.onload = () => { img.style.display = 'inline-block'; };
-            }
-        });
-    }
-});
-
-console.log("水印模式: " + (isMobileDeviceForWatermark() ? "📱 手机端 → 2列4行背景水印" : "🖥️ 电脑端 → 5行9列背景水印"));
+console.log("✅ 水印字体已恢复微软雅黑 + 左端对齐 | 手机端时间完整显示 + 防伪图片同行布局");
 </script>
-
 </body>
 </html>
