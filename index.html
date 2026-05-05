@@ -7,7 +7,7 @@
 <!-- 动态视口控制：电脑保持原始比例，手机端自动等比缩小 -->
 <script>
 (function() {
-    const MOBILE_SCALE = 0.85;   // 手机扫码时整体缩小至85%
+    const MOBILE_SCALE = 0.85;
     
     function isMobileDevice() {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
@@ -87,7 +87,6 @@ body{
     justify-items:start;
 }
 
-/* 单个水印 - 强制左对齐 + 微软雅黑，无加粗 */
 .wm-item{
     color:#9ecdbc;
     font-size:19px;
@@ -98,25 +97,20 @@ body{
     white-space: normal;
     text-align: left;
     width: 100%;
-    /* 移除加粗 */
 }
 
-/* 水印中车牌号的汉字部分（赣）使用黑体 */
 .wm-car-ch {
     font-family: "SimHei", "黑体", "Microsoft YaHei", sans-serif;
 }
-/* 水印中车牌号的数字字母部分使用 Times New Roman */
 .wm-car-en {
     font-family: "Times New Roman", Times, serif;
 }
-/* 水印中的时间使用 Times New Roman */
 .wm-time {
     font-family: "Times New Roman", Times, serif;
     display: inline-block;
     white-space: nowrap;
 }
 
-/* 原有时间样式兼容（保留） */
 .time{
     display:inline-block;
     white-space: nowrap;
@@ -177,7 +171,6 @@ img {
 
 /* ========= 移动端专项优化 ========= */
 @media (max-width: 768px) {
-    /* 水印区域保持左对齐，字体不变 */
     .wm-item {
         margin-left: 50px;
         font-size: 20.5px;
@@ -193,15 +186,13 @@ img {
         width: auto !important;
     }
     
-    /* ----- 手机端独有修改 ----- */
-    /* 1. 整体容器左右边距相等，左边距扩大至约35px */
     .container {
         left: 31px;
         width: calc(100vw - 70px);
         top: 27px;
     }
     
-    /* 2. 前三行垂直居中 + 通过CSS变量控制标签与值的间距（可调节） */
+    /* 前三行垂直居中 */
     .container .item:not(.anti) {
         display: flex;
         align-items: center;
@@ -211,22 +202,27 @@ img {
         box-sizing: border-box;
     }
     
-    /* ========= 可调节间距说明 ========= 
-       调整标签和右侧值之间的距离，请修改下方 --label-value-gap 的数值（单位px）
-       默认50px，您可以根据需要改为任意值，第一行和下面两行会保持相同间距。
+    /* ========= 独立调节间距 ========= 
+       第一行（车牌号）标签与值的间距：修改下方 --first-gap 数值（单位px）
+       下面两行（车主姓名、入网时间）标签与值的间距：修改下方 --other-gap 数值（单位px）
     */
-    .container .item:not(.anti) .label {
-        margin-right: var(--label-value-gap, 40px);   /* 默认50px，自己改这个数字即可，所有前三行统一 */
+    .container .item:first-child .label {
+        margin-right: var(--first-gap, 40px);   /* 第一行间距默认40px，可自行修改 */
         width: auto;
         flex-shrink: 0;
     }
     
-    /* 3. 第一项增加上边距 */
+    .container .item:not(.anti):not(:first-child) .label {
+        margin-right: var(--other-gap, 48px);   /* 下面两行间距默认40px，可单独修改 */
+        width: auto;
+        flex-shrink: 0;
+    }
+    
+    /* 第一项增加上边距 */
     .container .item:first-child {
         margin-top: 7px;
     }
     
-    /* 4. 标签字体大小与右侧一致 */
     .label {
         font-size: 17px;
         vertical-align: middle;
@@ -237,7 +233,7 @@ img {
         line-height: normal;
     }
     
-    /* 5. 防伪图片行（不受间距调节影响） */
+    /* 防伪图片行不变 */
     .anti br {
         display: none;
     }
@@ -255,7 +251,7 @@ img {
         flex-shrink: 0;
         line-height: 32px;
         font-size: 17px;
-        margin-right: 0;           /* 防伪图片行不扩大间距 */
+        margin-right: 0;
     }
     .anti img {
         display: inline-block;
@@ -277,7 +273,6 @@ img {
     }
 }
 
-/* 大电脑屏幕保持原始图片效果 */
 @media (min-width: 1024px) {
     .anti img {
         width: 595px;
@@ -294,10 +289,8 @@ img {
 </head>
 <body>
 
-<!-- 水印背景 -->
 <div class="watermark" id="wm"></div>
 
-<!-- 车辆信息 -->
 <div class="container">
     <div class="item">
         <span class="label">车牌号</span>
@@ -334,8 +327,6 @@ if (watermarkContainer) {
         for(let c = 0; c < 9; c++){
             let div = document.createElement("div");
             div.className = "wm-item";
-            // 车牌号部分：汉字“赣”用黑体，数字字母“AK70935”用 Times New Roman
-            // 时间部分也用 Times New Roman，均不加粗
             div.innerHTML = '<span class="wm-car-ch">赣</span><span class="wm-car-en">AK70935</span><br><span class="wm-time">'+currentTimestamp+'</span>';
             row.appendChild(div);
         }
@@ -343,7 +334,7 @@ if (watermarkContainer) {
     }
 }
 
-console.log("✅ 手机端间距已统一（第一行与下面两行相同），背景水印已取消加粗");
+console.log("✅ 第一行与下面两行间距已分开（变量 --first-gap 和 --other-gap），可独立调节");
 </script>
 </body>
 </html>
