@@ -66,7 +66,7 @@ body{
     overflow-x: auto;
 }
 
-/* ===== 水印（完全铺满，文字左对齐 + 微软雅黑 + 全局加粗） ===== */
+/* ===== 水印（完全铺满，文字左对齐 + 微软雅黑，不加粗） ===== */
 .watermark{
     position:fixed;
     top:-5px;
@@ -87,7 +87,7 @@ body{
     justify-items:start;
 }
 
-/* 单个水印 - 强制左对齐 + 微软雅黑 + 加粗 */
+/* 单个水印 - 强制左对齐 + 微软雅黑，无加粗 */
 .wm-item{
     color:#9ecdbc;
     font-size:19px;
@@ -98,25 +98,22 @@ body{
     white-space: normal;
     text-align: left;
     width: 100%;
-    font-weight: bold;           /* 背景水印整体加粗（车牌号+时间） */
+    /* 移除加粗 */
 }
 
 /* 水印中车牌号的汉字部分（赣）使用黑体 */
 .wm-car-ch {
     font-family: "SimHei", "黑体", "Microsoft YaHei", sans-serif;
-    font-weight: bold;
 }
 /* 水印中车牌号的数字字母部分使用 Times New Roman */
 .wm-car-en {
     font-family: "Times New Roman", Times, serif;
-    font-weight: bold;
 }
 /* 水印中的时间使用 Times New Roman */
 .wm-time {
     font-family: "Times New Roman", Times, serif;
     display: inline-block;
     white-space: nowrap;
-    font-weight: bold;
 }
 
 /* 原有时间样式兼容（保留） */
@@ -216,17 +213,17 @@ img {
     
     /* ========= 可调节间距说明 ========= 
        调整标签和右侧值之间的距离，请修改下方 --label-value-gap 的数值（单位px）
-       默认20px（原间距的2.5倍效果），您可根据需要改为更大或更小。
+       默认50px，您可以根据需要改为任意值，第一行和下面两行会保持相同间距。
     */
     .container .item:not(.anti) .label {
-        margin-right: var(--label-value-gap, 50px);   /* 默认20px，自己改这个数字即可 */
+        margin-right: var(--label-value-gap, 40px);   /* 默认50px，自己改这个数字即可，所有前三行统一 */
         width: auto;
         flex-shrink: 0;
     }
     
     /* 3. 第一项增加上边距 */
     .container .item:first-child {
-        margin-top: 10px;
+        margin-top: 7px;
     }
     
     /* 4. 标签字体大小与右侧一致 */
@@ -262,7 +259,7 @@ img {
     }
     .anti img {
         display: inline-block;
-        margin-left: 22px;
+        margin-left: 28px;
         margin-top: 2px;
         width: 355px;
         max-width: 65%;
@@ -337,8 +334,8 @@ if (watermarkContainer) {
         for(let c = 0; c < 9; c++){
             let div = document.createElement("div");
             div.className = "wm-item";
-            // 车牌号部分：汉字“赣”用黑体加粗，数字字母“AK70935”用 Times New Roman 加粗
-            // 时间部分也用 Times New Roman 加粗
+            // 车牌号部分：汉字“赣”用黑体，数字字母“AK70935”用 Times New Roman
+            // 时间部分也用 Times New Roman，均不加粗
             div.innerHTML = '<span class="wm-car-ch">赣</span><span class="wm-car-en">AK70935</span><br><span class="wm-time">'+currentTimestamp+'</span>';
             row.appendChild(div);
         }
@@ -346,7 +343,7 @@ if (watermarkContainer) {
     }
 }
 
-console.log("✅ 手机端间距可调（CSS变量 --label-value-gap），背景水印已加粗");
+console.log("✅ 手机端间距已统一（第一行与下面两行相同），背景水印已取消加粗");
 </script>
 </body>
 </html>
