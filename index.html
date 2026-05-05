@@ -159,7 +159,7 @@ img {
     border: 0;
 }
 
-/* ========= 移动端专项优化（时间完整 + 防伪图片同行） ========= */
+/* ========= 移动端专项优化（时间完整 + 防伪图片同行 + 手机端专属间距字体调整） ========= */
 @media (max-width: 768px) {
     /* 水印区域保持左对齐，字体不变 */
     .wm-item {
@@ -177,7 +177,25 @@ img {
         width: auto !important;
     }
     
-    /* 防伪图片同行修复 */
+    /* ----- 手机端独有：前三个项目左边距扩大2.2倍，上边距扩大1.5倍，文字垂直居中 ----- */
+    /* 原左边距基础来自 .container left = 16px（下方覆盖为16px），扩大2.2倍约35.2px，增加左边距19.2px */
+    /* 原第一个项目上边距基础来自 .container top = 27px（下方覆盖为27px），扩大1.5倍约40.5px，增加上边距13.5px */
+    .container .item:first-child,
+    .container .item:nth-child(2),
+    .container .item:nth-child(3) {
+        margin-left: 19px;          /* 使左边距从原16px增至约35px（2.2倍） */
+        /* 确保垂直居中（line-height已保证，无需额外设置） */
+    }
+    .container .item:first-child {
+        margin-top: 13.5px;         /* 使上端距离从原27px增至约40.5px（1.5倍） */
+    }
+    
+    /* 调整所有标签字体大小，与右边的值字体一致（14px），同时防伪图片标签也增大但不居中（符合要求） */
+    .label {
+        font-size: 14px;            /* 原手机端为13px，现在调大至与.value相同 */
+    }
+    
+    /* 防伪图片同行修复（保持原有，不破坏居中相关） */
     .anti br {
         display: none;
     }
@@ -214,16 +232,14 @@ img {
         }
     }
     
-    .label {
-        font-size: 13px;
-        width: 78px;
-    }
-    .value {
-        font-size: 13px;
-    }
+    /* 保持原有 .container 位置（注意：前三个item已通过margin偏移，不影响防伪图片） */
     .container {
         left: 16px;
+        top: 27px;          /* 保持原顶部距离，第一项通过margin-top额外增加 */
         width: calc(100vw - 32px);
+    }
+    .value {
+        font-size: 14px;     /* 确保右侧字体大小基准 */
     }
 }
 
@@ -291,7 +307,7 @@ if (watermarkContainer) {
     }
 }
 
-console.log("✅ 水印字体已恢复微软雅黑 + 左端对齐 | 手机端时间完整显示 + 防伪图片同行布局");
+console.log("✅ 水印字体已恢复微软雅黑 + 左端对齐 | 手机端时间完整显示 + 防伪图片同行布局 | 手机端前三个项目左边距/上边距已按要求扩大，标签字体已调大");
 </script>
 </body>
 </html>
