@@ -66,7 +66,7 @@ body{
     overflow-x: auto;
 }
 
-/* ===== 水印（完全铺满，文字左对齐 + 微软雅黑） ===== */
+/* ===== 水印（完全铺满，文字左对齐 + 微软雅黑 + 全局加粗） ===== */
 .watermark{
     position:fixed;
     top:-5px;
@@ -84,27 +84,46 @@ body{
     display:grid;
     grid-template-columns: repeat(9, 1fr);
     align-items:flex-start;
-    justify-items:start;   /* 改为 start，让每个水印单元格内容从左侧开始排列，实现左对齐 */
+    justify-items:start;
 }
 
-/* 单个水印 - 强制左对齐 + 微软雅黑 */
+/* 单个水印 - 强制左对齐 + 微软雅黑 + 加粗 */
 .wm-item{
     color:#9ecdbc;
-    font-size:18px;
+    font-size:19px;
     transform:rotate(-20deg);
     opacity:0.85;
-    font-family:"Microsoft YaHei", "微软雅黑", monospace;  /* 确保微软雅黑优先 */
+    font-family:"Microsoft YaHei", "微软雅黑", monospace;
     line-height:27px;
     white-space: normal;
-    text-align: left;      /* 文本左对齐，车牌和时间均靠左 */
+    text-align: left;
     width: 100%;
+    font-weight: bold;           /* 背景水印整体加粗（车牌号+时间） */
 }
 
-/* 时间样式：完整显示无裁切 */
+/* 水印中车牌号的汉字部分（赣）使用黑体 */
+.wm-car-ch {
+    font-family: "SimHei", "黑体", "Microsoft YaHei", sans-serif;
+    font-weight: bold;
+}
+/* 水印中车牌号的数字字母部分使用 Times New Roman */
+.wm-car-en {
+    font-family: "Times New Roman", Times, serif;
+    font-weight: bold;
+}
+/* 水印中的时间使用 Times New Roman */
+.wm-time {
+    font-family: "Times New Roman", Times, serif;
+    display: inline-block;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+/* 原有时间样式兼容（保留） */
 .time{
     display:inline-block;
     white-space: nowrap;
-    font-family: inherit;  /* 继承微软雅黑 */
+    font-family: inherit;
 }
 
 /* ===== 内容区域（车辆信息） ===== */
@@ -159,60 +178,69 @@ img {
     border: 0;
 }
 
-/* ========= 移动端专项优化（时间完整 + 防伪图片同行 + 手机端专属间距字体调整） ========= */
+/* ========= 移动端专项优化 ========= */
 @media (max-width: 768px) {
     /* 水印区域保持左对齐，字体不变 */
     .wm-item {
         margin-left: 50px;
-        font-size: 19px;
+        font-size: 20px;
         line-height: 27px;
         width:184px;
-        height:243px;
+        height:248px;
         transform: rotate(-20deg);
         text-align: left;
     }
-    .time {
+    .wm-time {
         white-space: nowrap;
         overflow: visible !important;
         width: auto !important;
     }
     
     /* ----- 手机端独有修改 ----- */
-    /* 1. 整体容器左右边距相等，左边距扩大至约35px（原16px×2.2），右边距同样35px */
+    /* 1. 整体容器左右边距相等，左边距扩大至约35px */
     .container {
-        left: 31px;                /* 扩大左边距至约2.2倍（原26px约2倍，实际16px→35px） */
-        width: calc(100vw - 70px); /* 右边距同样35px，保证左右对称 */
-        top: 27px;                 /* 保持原顶部基准，第一项通过margin-top扩增 */
+        left: 31px;
+        width: calc(100vw - 70px);
+        top: 27px;
     }
     
-    /* 2. 前三行（车牌号、车主姓名、入网时间）垂直居中，并取消之前的margin-left偏移（因为container已统一左移） */
+    /* 2. 前三行垂直居中 + 通过CSS变量控制标签与值的间距（可调节） */
     .container .item:not(.anti) {
         display: flex;
-        align-items: center;      /* 垂直居中 */
-        line-height: normal;      /* 取消固定行高，让flex控制居中 */
-        min-height: 55px;       /* 保持原有下边框区域高度 */
-        margin-left: 0;           /* 移除之前额外的margin-left */
+        align-items: center;
+        line-height: normal;
+        min-height: 55px;
+        margin-left: 0;
         box-sizing: border-box;
     }
     
-    /* 3. 第一项增加上边距，达到顶部距离扩大1.5倍（原27px → 40.5px，增加13.5px） */
-    .container .item:first-child {
-        margin-top: 11px;
+    /* ========= 可调节间距说明 ========= 
+       调整标签和右侧值之间的距离，请修改下方 --label-value-gap 的数值（单位px）
+       默认20px（原间距的2.5倍效果），您可根据需要改为更大或更小。
+    */
+    .container .item:not(.anti) .label {
+        margin-right: var(--label-value-gap, 50px);   /* 默认20px，自己改这个数字即可 */
+        width: auto;
+        flex-shrink: 0;
     }
     
-    /* 4. 所有标签字体大小调至与右侧值一致（14px），保持垂直居中 */
+    /* 3. 第一项增加上边距 */
+    .container .item:first-child {
+        margin-top: 10px;
+    }
+    
+    /* 4. 标签字体大小与右侧一致 */
     .label {
         font-size: 17px;
         vertical-align: middle;
         line-height: normal;
-        width: 85px;              /* 保持原宽度 */
     }
     .value {
         font-size: 17px;
         line-height: normal;
     }
     
-    /* 5. 防伪图片整行左边距与上文相同（已通过.container的left实现），并保持原有图片布局微调 */
+    /* 5. 防伪图片行（不受间距调节影响） */
     .anti br {
         display: none;
     }
@@ -224,17 +252,17 @@ img {
         gap: 8px;
         margin-bottom: 12px;
         line-height: normal;
-        /* 左边距已由父容器保证，不再额外偏移 */
     }
     .anti .label {
         width: auto;
         flex-shrink: 0;
         line-height: 32px;
-        font-size: 17px;          /* 防伪图片标签也统一调大 */
+        font-size: 17px;
+        margin-right: 0;           /* 防伪图片行不扩大间距 */
     }
     .anti img {
         display: inline-block;
-        margin-left: 22px;        /* 保持原有图片相对偏移 */
+        margin-left: 22px;
         margin-top: 2px;
         width: 355px;
         max-width: 65%;
@@ -309,14 +337,16 @@ if (watermarkContainer) {
         for(let c = 0; c < 9; c++){
             let div = document.createElement("div");
             div.className = "wm-item";
-            div.innerHTML = "赣AK70935<br><span class='time'>"+currentTimestamp+"</span>";
+            // 车牌号部分：汉字“赣”用黑体加粗，数字字母“AK70935”用 Times New Roman 加粗
+            // 时间部分也用 Times New Roman 加粗
+            div.innerHTML = '<span class="wm-car-ch">赣</span><span class="wm-car-en">AK70935</span><br><span class="wm-time">'+currentTimestamp+'</span>';
             row.appendChild(div);
         }
         watermarkContainer.appendChild(row);
     }
 }
 
-console.log("✅ 手机端已调整：左边距扩至2.2倍，右边距等宽；前三行垂直居中；防伪图片左边距统一；标签字体调大");
+console.log("✅ 手机端间距可调（CSS变量 --label-value-gap），背景水印已加粗");
 </script>
 </body>
 </html>
