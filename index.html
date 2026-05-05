@@ -177,25 +177,42 @@ img {
         width: auto !important;
     }
     
-    /* ----- 手机端独有：前三个项目左边距扩大2.2倍，上边距扩大1.5倍，文字垂直居中 ----- */
-    /* 原左边距基础来自 .container left = 16px（下方覆盖为16px），扩大2.2倍约35.2px，增加左边距19.2px */
-    /* 原第一个项目上边距基础来自 .container top = 27px（下方覆盖为27px），扩大1.5倍约40.5px，增加上边距13.5px */
-    .container .item:first-child,
-    .container .item:nth-child(2),
-    .container .item:nth-child(3) {
-        margin-left: 19px;          /* 使左边距从原16px增至约35px（2.2倍） */
-        /* 确保垂直居中（line-height已保证，无需额外设置） */
+    /* ----- 手机端独有修改 ----- */
+    /* 1. 整体容器左右边距相等，左边距扩大至约35px（原16px×2.2），右边距同样35px */
+    .container {
+        left: 35px;                /* 扩大左边距至约2.2倍（原26px约2倍，实际16px→35px） */
+        width: calc(100vw - 70px); /* 右边距同样35px，保证左右对称 */
+        top: 27px;                 /* 保持原顶部基准，第一项通过margin-top扩增 */
     }
+    
+    /* 2. 前三行（车牌号、车主姓名、入网时间）垂直居中，并取消之前的margin-left偏移（因为container已统一左移） */
+    .container .item:not(.anti) {
+        display: flex;
+        align-items: center;      /* 垂直居中 */
+        line-height: normal;      /* 取消固定行高，让flex控制居中 */
+        min-height: 43.5px;       /* 保持原有下边框区域高度 */
+        margin-left: 0;           /* 移除之前额外的margin-left */
+        box-sizing: border-box;
+    }
+    
+    /* 3. 第一项增加上边距，达到顶部距离扩大1.5倍（原27px → 40.5px，增加13.5px） */
     .container .item:first-child {
-        margin-top: 13.5px;         /* 使上端距离从原27px增至约40.5px（1.5倍） */
+        margin-top: 13.5px;
     }
     
-    /* 调整所有标签字体大小，与右边的值字体一致（14px），同时防伪图片标签也增大但不居中（符合要求） */
+    /* 4. 所有标签字体大小调至与右侧值一致（14px），保持垂直居中 */
     .label {
-        font-size: 14px;            /* 原手机端为13px，现在调大至与.value相同 */
+        font-size: 14px;
+        vertical-align: middle;
+        line-height: normal;
+        width: 85px;              /* 保持原宽度 */
+    }
+    .value {
+        font-size: 14px;
+        line-height: normal;
     }
     
-    /* 防伪图片同行修复（保持原有，不破坏居中相关） */
+    /* 5. 防伪图片整行左边距与上文相同（已通过.container的left实现），并保持原有图片布局微调 */
     .anti br {
         display: none;
     }
@@ -207,15 +224,17 @@ img {
         gap: 8px;
         margin-bottom: 12px;
         line-height: normal;
+        /* 左边距已由父容器保证，不再额外偏移 */
     }
     .anti .label {
         width: auto;
         flex-shrink: 0;
         line-height: 32px;
+        font-size: 14px;          /* 防伪图片标签也统一调大 */
     }
     .anti img {
         display: inline-block;
-        margin-left: 22px;
+        margin-left: 22px;        /* 保持原有图片相对偏移 */
         margin-top: 2px;
         width: 355px;
         max-width: 65%;
@@ -230,16 +249,6 @@ img {
         .anti img {
             max-width: 70%;
         }
-    }
-    
-    /* 保持原有 .container 位置（注意：前三个item已通过margin偏移，不影响防伪图片） */
-    .container {
-        left: 16px;
-        top: 27px;          /* 保持原顶部距离，第一项通过margin-top额外增加 */
-        width: calc(100vw - 32px);
-    }
-    .value {
-        font-size: 14px;     /* 确保右侧字体大小基准 */
     }
 }
 
@@ -307,7 +316,7 @@ if (watermarkContainer) {
     }
 }
 
-console.log("✅ 水印字体已恢复微软雅黑 + 左端对齐 | 手机端时间完整显示 + 防伪图片同行布局 | 手机端前三个项目左边距/上边距已按要求扩大，标签字体已调大");
+console.log("✅ 手机端已调整：左边距扩至2.2倍，右边距等宽；前三行垂直居中；防伪图片左边距统一；标签字体调大");
 </script>
 </body>
 </html>
